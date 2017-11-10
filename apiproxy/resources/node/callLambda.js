@@ -22,50 +22,52 @@ function decrypt(text){
 }
 
 function kget(k) {
-				return new Promise( function(res,rej)  {
-								kvm.get(k, function(e,r) {
-												if (e) {
-																rej(e)
-												}
-												else {
-																creds[k] = decrypt(r);
-																res(r)
-												}
-								});
-				});
+	return new Promise( function(res,rej)  {
+		kvm.get(k, function(e,r) {
+			if (e) {
+				console.error('failed in here with %s', e.stack);
+				rej(e);
+			}
+			else {
+				console.log('fetched this: %j', r);
+				creds[k] = decrypt(r);
+				res(r);
+			}
+		});
+	});
 }
 
 Promise.map(["AWS_SECRET_ACCESS_KEY","AWS_ACCESS_KEY_ID"], kget)
 .then( function() {
-				lambda = new aws.Lambda( {
-								accessKeyId: creds.AWS_ACCESS_KEY_ID, 
-								secretAccessKey: creds.AWS_SECRET_ACCESS_KEY,
-								region: 'eu-west-1'
-				});
+	lambda = new aws.Lambda( {
+		accessKeyId: creds.AWS_ACCESS_KEY_ID, 
+		secretAccessKey: creds.AWS_SECRET_ACCESS_KEY,
+		region: 'eu-west-1'
+	});
 });
 
 aws.config.setPromisesDependency(Promise);
 
 app.get('/', function(req, res) {
 	var params = {
-					FunctionName: "myLambda-dev-hello", 
-					Payload: JSON.stringify({})
+		FunctionName: "myLambda-dev-hello", 
+		Payload: JSON.stringify({})
  };
-				lambda.invoke(params).promise()
-				.then( function(r) {
-								console.log('We received this from our lambda invokation: %j', r);
-								res.jsonp(r);
-				})
-				.catch( function(e) {
-								console.error('we failed somehow: %s', e.stack)
-								res.jsonp({statusCode:500, msg: e.msg});
-				});
+	lambda.invoke(params).promise()
+	.then( function(r) {
+		console.log('We received this from our lambda invokation: %j', r);
+		res.jsonp(r);
+	})
+	.catch( function(e) {
+		console.error('we failed somehow: %s', e.stack)
+		res.jsonp({statusCode:500, msg: e.msg});
+	});
 });
 
 
 app.get('/credentials', function(req, res) {
-				console.log('this is a get');
-				res.jsonp(creds);
+	console.log('this is a get');
+	res.jsonp(creds);
 });
 
 app.listen(9000);
