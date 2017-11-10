@@ -20,7 +20,7 @@ var decipher = crypto.createDecipher(alg,pwd)
 function decrypt(text){
   var dec = decipher.update(text,'hex','utf8')
   dec += decipher.final('utf8');
-  console.log('deciphered credentials: %s => %s', text, dec);
+  console.log('deciphered credentials');
   return dec;
 }
 
@@ -32,7 +32,7 @@ function kget(k) {
 				rej(e);
 			}
 			else {
-				console.log('fetched this: %j', r);
+				console.log('fetched this from kvm: %j', r);
         try {
           var dec =  decrypt(r);
         }
@@ -48,7 +48,6 @@ function kget(k) {
 
 Promise.map(["AWS_SECRET_ACCESS_KEY","AWS_ACCESS_KEY_ID"], kget)
 .then( function() {
-  console.log('the creds: %j', creds);
 	lambda = new aws.Lambda( {
 		accessKeyId: creds.AWS_ACCESS_KEY_ID, 
 		secretAccessKey: creds.AWS_SECRET_ACCESS_KEY,
@@ -80,7 +79,7 @@ app.get('/', function(req, res) {
 
 app.get('/credentials', function(req, res) {
 	console.log('this is a get');
-	res.jsonp(creds);
+	res.jsonp(Object.keys(creds));
 });
 
 /*
