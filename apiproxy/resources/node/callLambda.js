@@ -1,25 +1,21 @@
 const express = require('express'),
-				Promise = require('bluebird'),
-				aws = require('aws-sdk'),
-				apigee = require('apigee-access'),
-				crypto = require('crypto');
+      Promise = require('bluebird'),
+      aws     = require('aws-sdk'),
+      apigee  = require('apigee-access'),
+      bp      = require('body-parser'),
+      crypto  = require('crypto');
 
 // Set up Express environment and enable it to read and write JavaScript
 var app = express();
+app.use(bp.json());
 var lambda = {};
 var creds = {};
-var alg = 'aes-256-ctr';
-var pwd = 'thisiscool';
+var alg = 'aes-128-cbc';
+var pwd = 'thisiscool123456';
 
 
 var kvm = apigee.getKeyValueMap('creds', 'environment');
-
-function decrypt(text){
-  var decipher = crypto.createDecipher(algorithm,password)
-  var dec = decipher.update(text,'hex','utf8')
-  dec += decipher.final('utf8');
-  return dec;
-}
+var decipher = crypto.createDecipher(alg,pwd)
 
 function kget(k) {
 	return new Promise( function(res,rej)  {
@@ -30,7 +26,17 @@ function kget(k) {
 			}
 			else {
 				console.log('fetched this: %j', r);
-				creds[k] = decrypt(r);
+        var dec = '';
+        try {
+          decipher.update(r,'hex','utf8')
+          var dec = decipher.setAutoPadding(false);
+          dec += decipher.final('utf8');
+          console.log('decrypted %s -> %s', r, dec);
+        }
+        catch(e) {
+          console.error('failed deciphering: %s', e.stack);
+        }
+				creds[k] = dec;
 				res(r);
 			}
 		});
@@ -44,6 +50,9 @@ Promise.map(["AWS_SECRET_ACCESS_KEY","AWS_ACCESS_KEY_ID"], kget)
 		secretAccessKey: creds.AWS_SECRET_ACCESS_KEY,
 		region: 'eu-west-1'
 	});
+})
+.catch( function(e) {
+  console.error('failed setting up the lambda object with creds: %s', e.stack);
 });
 
 aws.config.setPromisesDependency(Promise);
@@ -69,6 +78,28 @@ app.get('/credentials', function(req, res) {
 	console.log('this is a get');
 	res.jsonp(creds);
 });
+
+/*
+ * turns out the you can set kvm keys and values.. only read them
+ *
+app.post('/credentials', function(req, res) {
+	console.log('this is a post and it has a body: %j', JSON.parse(req.body));
+  new Promise( function(res,rej) {
+    if ( req.body.AWS_ACCESS_KEY_ID && req.body.AWS_SECRET_ACCESS_KEY ) {
+      res(req.body);
+    }
+    else {
+      rej('failed');
+    }
+  })
+  .then( function(d) {
+    res.jsonp(d);
+  })
+  .catch( function(e) {
+    res.jsonp( {statusCode:500, msg: 'failed updating keys'});
+  })
+});
+*/
 
 app.listen(9000);
 console.log('Listening on port 9000');

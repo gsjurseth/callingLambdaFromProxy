@@ -2,8 +2,8 @@
 
 // Nodejs encryption with CTR
 var crypto = require('crypto'),
-    algorithm = 'aes-256-ctr',
-    password = 'thisiscool';
+    algorithm = 'aes-128-cbc',
+    password = 'thisiscool123456';
 
 function encrypt(text){
   var cipher = crypto.createCipher(algorithm,password)
@@ -22,4 +22,4 @@ function decrypt(text){
 var hw = encrypt(process.argv[2])
 // outputs hello world
 console.log('encrypted its: %s', hw);
-console.log(decrypt(hw));
+console.log('and now decripted again: %s', decrypt(hw));
