@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "aws-sdk": "^2.148.0"
+    "apigee-access": "^1.4.0",
+    "aws-sdk": "^2.148.0",
+    "bluebird": "^3.5.1",
+    "express": "^4.16.2"
   }
 }

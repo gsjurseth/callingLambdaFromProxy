@@ -3,6 +3,7 @@ const Promise = require('bluebird'),
 
 module.exports.hello = (ev, ctx, cb) => {
 				fetch( 'http://httpbin.org/ip' )
+				.then( d => d.json() )
 				.then( d => {
 								console.log('managed to fetch the ip');
 								cb(null,d);
