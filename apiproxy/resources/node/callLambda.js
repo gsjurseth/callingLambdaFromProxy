@@ -2,13 +2,13 @@ const express = require('express'),
 				Promise = require('bluebird'),
 				aws = require('aws-sdk'),
 				apigee = require('apigee-access'),
-				crypto = require('crypto'),
+				crypto = require('crypto');
 
 // Set up Express environment and enable it to read and write JavaScript
 var app = express();
 var lambda = {};
 var creds = {};
-var alg = 'aes-256-ctr',
+var alg = 'aes-256-ctr';
 var pwd = 'thisiscool';
 
 
