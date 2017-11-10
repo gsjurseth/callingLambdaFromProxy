@@ -17,6 +17,13 @@ var pwd = 'thisiscool123456';
 var kvm = apigee.getKeyValueMap('creds', 'environment');
 var decipher = crypto.createDecipher(alg,pwd)
 
+function decrypt(text){
+  var dec = decipher.update(text,'hex','utf8')
+  dec += decipher.final('utf8');
+  console.log('deciphered credentials: %s => %s', text, dec);
+  return dec;
+}
+
 function kget(k) {
 	return new Promise( function(res,rej)  {
 		kvm.get(k, function(e,r) {
@@ -26,12 +33,8 @@ function kget(k) {
 			}
 			else {
 				console.log('fetched this: %j', r);
-        var dec = '';
         try {
-          decipher.update(r,'hex','utf8')
-          var dec = decipher.setAutoPadding(false);
-          dec += decipher.final('utf8');
-          console.log('decrypted %s -> %s', r, dec);
+          var dec =  decrypt(r);
         }
         catch(e) {
           console.error('failed deciphering: %s', e.stack);
@@ -45,6 +48,7 @@ function kget(k) {
 
 Promise.map(["AWS_SECRET_ACCESS_KEY","AWS_ACCESS_KEY_ID"], kget)
 .then( function() {
+  console.log('the creds: %j', creds);
 	lambda = new aws.Lambda( {
 		accessKeyId: creds.AWS_ACCESS_KEY_ID, 
 		secretAccessKey: creds.AWS_SECRET_ACCESS_KEY,
