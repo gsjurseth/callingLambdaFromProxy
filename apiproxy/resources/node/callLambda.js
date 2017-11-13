@@ -1,9 +1,9 @@
 const express = require('express'),
-      Promise = require('bluebird'),
-      aws     = require('aws-sdk'),
-      apigee  = require('apigee-access'),
-      bp      = require('body-parser'),
-      crypto  = require('crypto');
+	    Promise = require('bluebird'),
+	    aws     = require('aws-sdk'),
+	    apigee  = require('apigee-access'),
+	    bp      = require('body-parser'),
+	    crypto  = require('crypto');
 
 // Set up Express environment and enable it to read and write JavaScript
 var app = express();
@@ -18,14 +18,14 @@ var kvm = apigee.getKeyValueMap('creds', 'environment');
 var decipher = crypto.createDecipher(alg,pwd)
 
 function decrypt(text){
-  var dec = decipher.update(text,'hex','utf8')
-  dec += decipher.final('utf8');
-  console.log('deciphered credentials');
-  return dec;
+	var dec = decipher.update(text,'hex','utf8')
+	dec += decipher.final('utf8');
+	console.log('deciphered credentials');
+	return dec;
 }
 
 function kget(k) {
-	return new Promise( function(res,rej)  {
+	return new Promise( function(res,rej)	{
 		kvm.get(k, function(e,r) {
 			if (e) {
 				console.error('failed in here with %s', e.stack);
@@ -33,12 +33,12 @@ function kget(k) {
 			}
 			else {
 				console.log('fetched this from kvm: %j', r);
-        try {
-          var dec =  decrypt(r);
-        }
-        catch(e) {
-          console.error('failed deciphering: %s', e.stack);
-        }
+	      try {
+	        var dec =  decrypt(r);
+	      }
+	      catch(e) {
+	        console.error('failed deciphering: %s', e.stack);
+	      }
 				creds[k] = dec;
 				res(r);
 			}
@@ -55,7 +55,7 @@ Promise.map(["AWS_SECRET_ACCESS_KEY","AWS_ACCESS_KEY_ID"], kget)
 	});
 })
 .catch( function(e) {
-  console.error('failed setting up the lambda object with creds: %s', e.stack);
+	console.error('failed setting up the lambda object with creds: %s', e.stack);
 });
 
 aws.config.setPromisesDependency(Promise);
@@ -87,20 +87,20 @@ app.get('/credentials', function(req, res) {
  *
 app.post('/credentials', function(req, res) {
 	console.log('this is a post and it has a body: %j', JSON.parse(req.body));
-  new Promise( function(res,rej) {
-    if ( req.body.AWS_ACCESS_KEY_ID && req.body.AWS_SECRET_ACCESS_KEY ) {
-      res(req.body);
-    }
-    else {
-      rej('failed');
-    }
-  })
-  .then( function(d) {
-    res.jsonp(d);
-  })
-  .catch( function(e) {
-    res.jsonp( {statusCode:500, msg: 'failed updating keys'});
-  })
+	new Promise( function(res,rej) {
+	  if ( req.body.AWS_ACCESS_KEY_ID && req.body.AWS_SECRET_ACCESS_KEY ) {
+	    res(req.body);
+	  }
+	  else {
+	    rej('failed');
+	  }
+	})
+	.then( function(d) {
+	  res.jsonp(d);
+	})
+	.catch( function(e) {
+	  res.jsonp( {statusCode:500, msg: 'failed updating keys'});
+	})
 });
 */
 
