@@ -15,3 +15,7 @@ The lambda simply calls http://httpbin.org/ip and fetches the gw ip that it used
 
 # The apiproxy
 The api proxy is a barebones nodejs script. If you call it with `/credentials` then it will spit back the kvm credentials in their encrypted format. If you call it directly with `/` then it will use those fetched and decrypted credentials to call lambda.invoke() and then spit back that response.
+
+Deploy the proxy like so using apigeetool and replace with your own organization and username:
+```bash
+apigeetool deployproxy -d . -o <organization> -n callLambda -u <username>  -e prod,test -V```
